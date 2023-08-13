@@ -12,7 +12,9 @@ public class RequestManager {
     public static String getPostsEndpoint() {
         return BASE_URL + "posts?per_page=" + postPerPage;
     }
-
+    public static String getPostsEndpoint(int page) {
+        return BASE_URL + "posts?per_page=" + postPerPage + "&page=" + page;
+    }
     public static String getPostEndpoint(int postId) {
         return BASE_URL + "posts/" + postId + "?";
     }
