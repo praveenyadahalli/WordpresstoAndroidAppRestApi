@@ -7,6 +7,12 @@ public class PostModel {
     private Map<String, Object> title;
     private Map<String, Object> content;
 
+    public PostModel(Map<String, Object> title, Map<String, Object> content, int postId) {
+        this.title = title;
+        this.content = content;
+        this.postId = postId;
+    }
+
     public Map<String, Object> getTitle() {
         return title;
     }

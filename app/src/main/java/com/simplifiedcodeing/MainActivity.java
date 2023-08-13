@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -26,7 +25,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
     ProgressDialog progressDialog;
     ListView postListView;
-    List<Map<String, Object>> postListData; // Declare postListData here
+    List<Map<String, Object>> postListData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,15 +44,21 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(String s) {
                 Gson gson = new Gson();
-                postListData = (List<Map<String, Object>>) gson.fromJson(s, List.class);
+                postListData = gson.fromJson(s, List.class);
 
-                List<String> postTitles = new ArrayList<>();
+                List<PostModel> postModels = new ArrayList<>();
                 for (Map<String, Object> post : postListData) {
-                    Map<String, Object> title = (Map<String, Object>) post.get("title");
-                    postTitles.add((String) title.get("rendered"));
+                    String title = ((Map<String, Object>) post.get("title")).get("rendered").toString();
+                    double postIdDouble = (double) post.get("id");
+                    int postId = (int) postIdDouble;
+
+                    PostModel postModel = new PostModel((Map<String, Object>) post.get("title"), (Map<String, Object>) post.get("content"), postId);
+                    postModels.add(postModel);
                 }
 
-                postListView.setAdapter(new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_list_item_1, postTitles));
+                PostAdapter postAdapter = new PostAdapter(MainActivity.this, R.layout.list_item_post, postModels);
+                postListView.setAdapter(postAdapter);
+
                 progressDialog.dismiss();
             }
         }, new Response.ErrorListener() {
@@ -70,13 +75,15 @@ public class MainActivity extends AppCompatActivity {
         postListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Map<String, Object> selectedPost = postListData.get(position);
-                double postIdDouble = (double) selectedPost.get("id");
-                int postId = (int) postIdDouble;
+                if (postListData != null && position < postListData.size()) {
+                    Map<String, Object> selectedPost = postListData.get(position);
+                    double postIdDouble = (double) selectedPost.get("id");
+                    int postId = (int) postIdDouble;
 
-                Intent intent = new Intent(MainActivity.this, PostActivity.class);
-                intent.putExtra("id", postId);
-                startActivity(intent);
+                    Intent intent = new Intent(MainActivity.this, PostActivity.class);
+                    intent.putExtra("id", postId);
+                    startActivity(intent);
+                }
             }
         });
     }

@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import java.util.List;
+import java.util.Map;
 
 public class PostAdapter extends ArrayAdapter<PostModel> {
 
@@ -26,16 +27,40 @@ public class PostAdapter extends ArrayAdapter<PostModel> {
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         View view = convertView;
+        ViewHolder holder;
+
         if (view == null) {
             view = inflater.inflate(layoutResource, parent, false);
+            holder = new ViewHolder();
+            holder.titleTextView = view.findViewById(R.id.title); // Replace with the correct ID
+            view.setTag(holder);
+        } else {
+            holder = (ViewHolder) view.getTag();
         }
 
         PostModel post = getItem(position);
         if (post != null) {
-            TextView titleTextView = view.findViewById(R.id.title);
-            titleTextView.setText(post.getTitle().get("rendered").toString());
+            Object titleObject = post.getTitle();
+            if (titleObject instanceof Map) {
+                Map<String, Object> titleMap = (Map<String, Object>) titleObject;
+                Object renderedTitleObject = titleMap.get("rendered");
+                if (renderedTitleObject != null) {
+                    String renderedTitle = renderedTitleObject.toString();
+                    holder.titleTextView.setText(renderedTitle);
+                } else {
+                    holder.titleTextView.setText("No Title");
+                }
+            } else {
+                holder.titleTextView.setText("Invalid Title Format");
+            }
+        } else {
+            holder.titleTextView.setText("No Post Data");
         }
 
         return view;
+    }
+
+    private static class ViewHolder {
+        TextView titleTextView;
     }
 }
