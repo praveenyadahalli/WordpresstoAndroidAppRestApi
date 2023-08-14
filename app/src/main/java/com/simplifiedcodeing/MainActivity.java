@@ -1,6 +1,5 @@
 package com.simplifiedcodeing;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -14,6 +13,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
     ListView postListView;
     PostAdapter postAdapter;
+    InfiniteScrollHelper scrollHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         postListView.setAdapter(postAdapter);
 
         // Initialize InfiniteScrollHelper with context, listView, and postAdapter
-        InfiniteScrollHelper scrollHelper = new InfiniteScrollHelper(MainActivity.this, postListView, postAdapter);
+        scrollHelper = new InfiniteScrollHelper(MainActivity.this, postListView, postAdapter);
 
         postListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -36,6 +36,13 @@ public class MainActivity extends AppCompatActivity {
                 handleItemClick(position);
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        // Dismiss the progress dialog and handle back button press
+        scrollHelper.dismissProgressDialog();
+        super.onBackPressed();
     }
 
     private void handleItemClick(int position) {

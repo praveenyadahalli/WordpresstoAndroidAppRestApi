@@ -1,7 +1,10 @@
 package com.simplifiedcodeing;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.AbsListView;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -25,7 +28,7 @@ public class InfiniteScrollHelper {
     private boolean isLoading = false;
     private PostAdapter postAdapter;
 
-    private ProgressDialog progressDialog;
+    private Dialog customProgressDialog;
 
     List<Map<String, Object>> postListData;
 
@@ -34,9 +37,10 @@ public class InfiniteScrollHelper {
         this.listView = listView;
         this.postAdapter = postAdapter;
 
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setMessage("Loading...");
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        customProgressDialog = new Dialog(context);
+        customProgressDialog.setCancelable(true);
+        View dialogView = LayoutInflater.from(context).inflate(R.layout.custom_progress_bar, null);
+        customProgressDialog.setContentView(dialogView);
 
         setupScrollListener();
         loadPosts();
@@ -59,7 +63,7 @@ public class InfiniteScrollHelper {
     }
 
     private void loadPosts() {
-        progressDialog.show(); // Show progress dialog
+        customProgressDialog.show();
 
         String url = RequestManager.getPostsEndpoint(currentPage);
         StringRequest request = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
@@ -81,12 +85,12 @@ public class InfiniteScrollHelper {
                 postAdapter.addAll(postModels);
                 postAdapter.notifyDataSetChanged();
 
-                progressDialog.dismiss(); // Dismiss progress dialog
+                customProgressDialog.dismiss();
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                progressDialog.dismiss(); // Dismiss progress dialog
+                customProgressDialog.dismiss(); // Dismiss progress dialog
                 Toast.makeText(context, "Some error occurred", Toast.LENGTH_LONG).show();
             }
         });
@@ -94,10 +98,15 @@ public class InfiniteScrollHelper {
         RequestQueue rQueue = Volley.newRequestQueue(context);
         rQueue.add(request);
     }
-
+    public void dismissProgressDialog() {
+        if (customProgressDialog != null && customProgressDialog.isShowing()) {
+            customProgressDialog.dismiss();
+        }
+    }
     private void loadMorePosts() {
         isLoading = true;
         currentPage++;
+        customProgressDialog.show();
 
         String url = RequestManager.getPostsEndpoint(currentPage);
         StringRequest request = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
