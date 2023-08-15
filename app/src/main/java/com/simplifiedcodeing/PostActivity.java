@@ -1,5 +1,6 @@
 package com.simplifiedcodeing;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.webkit.WebView;
@@ -20,9 +21,10 @@ import com.google.gson.Gson;
 import java.util.Map;
 
 public class PostActivity extends AppCompatActivity {
+
     TextView title;
     WebView content;
-    ProgressDialog progressDialog;
+    Dialog customProgressDialog;
     Gson gson;
     Map<String, Object> mapPost;
     Map<String, Object> mapTitle;
@@ -43,10 +45,10 @@ public class PostActivity extends AppCompatActivity {
         title = findViewById(R.id.title);
         content = findViewById(R.id.content);
 
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Loading...");
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.show();
+        customProgressDialog = new Dialog(this);
+        customProgressDialog.setCancelable(false);
+        customProgressDialog.setContentView(R.layout.custom_progress_bar);
+        customProgressDialog.show();
 
         String url = RequestManager.getPostEndpoint(id);
 
@@ -65,12 +67,16 @@ public class PostActivity extends AppCompatActivity {
                 content.setWebViewClient(new WebViewClient());
                 content.loadDataWithBaseURL(null, mapContent.get("rendered").toString(), "text/html", "UTF-8", null);
 
-                progressDialog.dismiss();
+                if (customProgressDialog != null && customProgressDialog.isShowing()) {
+                    customProgressDialog.dismiss();
+                }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                progressDialog.dismiss();
+                if (customProgressDialog != null && customProgressDialog.isShowing()) {
+                    customProgressDialog.dismiss();
+                }
                 Toast.makeText(PostActivity.this, "Error loading post", Toast.LENGTH_LONG).show();
                 finish();
             }
